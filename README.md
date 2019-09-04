@@ -1,4 +1,4 @@
-## scratch-vm
+## scratch-vm-xxbc
 #### Scratch VM is a library for representing, running, and maintaining the state of computer programs written using [Scratch Blocks](https://github.com/LLK/scratch-blocks).
 
 [![Build Status](https://travis-ci.org/LLK/scratch-vm.svg?branch=develop)](https://travis-ci.org/LLK/scratch-vm)
@@ -10,12 +10,12 @@ This requires you to have Git and Node.js installed.
 
 To install as a dependency for your own application:
 ```bash
-npm install scratch-vm
+npm install scratch-vm-xxbc
 ```
-To set up a development environment to edit scratch-vm yourself:
+To set up a development environment to edit scratch-vm-xxbc yourself:
 ```bash
-git clone https://github.com/LLK/scratch-vm.git
-cd scratch-vm
+git clone https://github.com/weijiahui1/scratch-vm-xxbc.git
+cd scratch-vm-xxbc
 npm install
 ```
 
@@ -42,7 +42,7 @@ npm run build
 ```
 
 ```html
-<script src="/path/to/dist/web/scratch-vm.js"></script>
+<script src="/path/to/dist/web/scratch-vm-xxbc.js"></script>
 <script>
     var vm = new window.VirtualMachine();
     // do things
@@ -52,7 +52,7 @@ npm run build
 ## How to include in a Node.js App
 For an extended setup example, check out the /src/playground directory, which includes a fully running VM instance.
 ```js
-var VirtualMachine = require('scratch-vm');
+var VirtualMachine = require('scratch-vm-xxbc');
 var vm = new VirtualMachine();
 
 // Block events
