@@ -358,7 +358,7 @@ class MicroBit {
 }
 
 /**
- * Enum for tilt sensor direction.
+ * Enum for tilt sensor direction. - 倾斜传感器方向枚举。
  * @readonly
  * @enum {string}
  */
@@ -371,7 +371,7 @@ const MicroBitTiltDirection = {
 };
 
 /**
- * Enum for micro:bit gestures.
+ * Enum for micro:bit gestures. -micro:bit手势的枚举。
  * @readonly
  * @enum {string}
  */
@@ -382,7 +382,7 @@ const MicroBitGestures = {
 };
 
 /**
- * Enum for micro:bit buttons.
+ * Enum for micro:bit buttons. - micro:bit按钮的枚举。
  * @readonly
  * @enum {string}
  */
@@ -393,13 +393,23 @@ const MicroBitButtons = {
 };
 
 /**
- * Enum for micro:bit pin states.
+ * Enum for micro:bit pin states. - micro:bit pin状态的枚举。
  * @readonly
  * @enum {string}
  */
 const MicroBitPinState = {
     ON: 'on',
     OFF: 'off'
+};
+
+/**
+ * Enum for micro:bit led states. - micro:bit led状态的枚举。
+ * @readonly
+ * @enum {string}
+ */
+const MicroBitLedState = {
+    SHOW: 'show',
+    HIDE: 'hide'
 };
 
 /**
@@ -565,6 +575,26 @@ class Scratch3MicroBitBlocks {
         ];
     }
 
+    get LED_STATE () {
+        return [
+            {
+                text: formatMessage({
+                    id: 'microbit.ledState.show',
+                    default: 'show',
+                    description: ''
+                }),
+                value: MicroBitLedState.SHOW
+            },
+            {
+                text: formatMessage({
+                    id: 'microbit.ledState.hide',
+                    default: 'hide',
+                    description: ''
+                }),
+                value: MicroBitLedState.HIDE
+            }
+        ];
+    }
     /**
      * Construct a set of MicroBit blocks.
      * @param {Runtime} runtime - the Scratch 3.0 runtime.
@@ -576,12 +606,12 @@ class Scratch3MicroBitBlocks {
          */
         this.runtime = runtime;
 
-        // Create a new MicroBit peripheral instance
+        // Create a new MicroBit peripheral instance - 创建新的Microbit外围实例
         this._peripheral = new MicroBit(this.runtime, Scratch3MicroBitBlocks.EXTENSION_ID);
     }
 
     /**
-     * @returns {object} metadata for this extension and its blocks.
+     * @returns {object} metadata for this extension and its blocks. - 此扩展及其块的元数据。
      */
     getInfo () {
         return {
@@ -619,6 +649,23 @@ class Scratch3MicroBitBlocks {
                             type: ArgumentType.STRING,
                             menu: 'buttons',
                             defaultValue: MicroBitButtons.A
+                        }
+                    }
+                },
+                '---',
+                {
+                    opcode: 'whenStart',
+                    text: formatMessage({
+                        id: 'microbit.whenStart',
+                        default: 'when [PINSTATE]',
+                        description: 'when the selected pinState is detected by the micro:bit'
+                    }),
+                    blockType: BlockType.BOOLEAN,
+                    arguments: {
+                        PINSTATE: {
+                            type: ArgumentType.STRING,
+                            menu: 'pinState',
+                            defaultValue: MicroBitPinState.ON
                         }
                     }
                 },
@@ -687,6 +734,32 @@ class Scratch3MicroBitBlocks {
                         description: 'display nothing on the micro:bit display'
                     }),
                     blockType: BlockType.COMMAND
+                },
+                {
+                    opcode: 'displayXY',
+                    text: formatMessage({
+                        id: 'microbit.displayXY',
+                        default: '[LEDSTATE] coordinates x:[LEDX]y:[LEDY]',
+                        description: ''
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        LEDSTATE: {
+                            type: ArgumentType.STRING,
+                            menu: 'ledState',
+                            defaultValue: MicroBitLedState.SHOW
+                        },
+                        LEDX: {
+                            type: ArgumentType.STRING,
+                            menu: 'ledX',
+                            defaultValue: '0'
+                        },
+                        LEDY: {
+                            type: ArgumentType.STRING,
+                            menu: 'ledY',
+                            defaultValue: '0'
+                        }
+                    }
                 },
                 '---',
                 {
@@ -793,6 +866,18 @@ class Scratch3MicroBitBlocks {
                     acceptReporters: true,
                     items: this.TILT_DIRECTION_ANY_MENU
                 },
+                ledX: {
+                    acceptReporters: true,
+                    items: ['0', '1', '2', '3', '4']
+                },
+                ledY: {
+                    acceptReporters: true,
+                    items: ['0', '1', '2', '3', '4']
+                },
+                ledState: {
+                    acceptReporters: true,
+                    items: this.LED_STATE
+                },
                 touchPins: {
                     acceptReporters: true,
                     items: ['0', '1', '2']
@@ -832,7 +917,9 @@ class Scratch3MicroBitBlocks {
         }
         return false;
     }
+    whenStart (args) {
 
+    }
     /**
      * Test whether the micro:bit is moving
      * @param {object} args - the block's arguments.
@@ -916,7 +1003,68 @@ class Scratch3MicroBitBlocks {
             }, BLESendInterval);
         });
     }
+    /**
+     * Display a predefined symbol on the 5x5 LED matrix.
+     * @param {object} args - the block's arguments.
+     * @return {Promise} - a Promise that resolves after a tick.
+     */
 
+    displayXY (args) {
+        let currentArgs = '0000000000000000000000000';
+        const currentArgsArrInit = currentArgs.split('');
+        for (let j = 0; j < this._peripheral.ledMatrixState.length; j++) {
+            let currState = this._peripheral.ledMatrixState[j];
+            if (currState - 16 >= 0) {
+                currentArgsArrInit[4 + (5 * j)] = 1;
+                currState -= 16;
+            }
+            if (currState - 8 >= 0) {
+                currentArgsArrInit[3 + (5 * j)] = 1;
+                currState -= 8;
+            }
+            if (currState - 4 >= 0) {
+                currentArgsArrInit[2 + (5 * j)] = 1;
+                currState -= 4;
+            }
+            if (currState - 2 >= 0) {
+                currentArgsArrInit[1 + (5 * j)] = 1;
+                currState -= 2;
+            }
+            if (currState - 1 >= 0) {
+                currentArgsArrInit[0 + (5 * j)] = 1;
+            }
+            currentArgs = currentArgsArrInit.join('');
+        }
+        const currentIndex = Number(args.LEDX) + (Number(args.LEDY) * 5);
+        const currentArgsArr = currentArgs.split('');
+        if (args.LEDSTATE === 'show') {
+            currentArgsArr[currentIndex] = 1;
+            currentArgs = currentArgsArr.join('');
+        } else if (args.LEDSTATE === 'hide') {
+            currentArgsArr[currentIndex] = 0;
+            currentArgs = currentArgsArr.join('');
+        }
+        const symbol = cast.toString(currentArgs).replace(/\s/g, '');
+        const reducer = (accumulator, c, index) => {
+            const value = (c === '0') ? accumulator : accumulator + Math.pow(2, index);
+            return value;
+        };
+        const hex = symbol.split('').reduce(reducer, 0);
+        if (hex !== null) {
+            this._peripheral.ledMatrixState[0] = hex & 0x1F;
+            this._peripheral.ledMatrixState[1] = (hex >> 5) & 0x1F;
+            this._peripheral.ledMatrixState[2] = (hex >> 10) & 0x1F;
+            this._peripheral.ledMatrixState[3] = (hex >> 15) & 0x1F;
+            this._peripheral.ledMatrixState[4] = (hex >> 20) & 0x1F;
+            this._peripheral.displayMatrix(this._peripheral.ledMatrixState);
+        }
+
+        return new Promise(resolve => {
+            setTimeout(() => {
+                resolve();
+            }, BLESendInterval);
+        });
+    }
     /**
      * Test whether the tilt sensor is currently tilted.
      * @param {object} args - the block's arguments.
