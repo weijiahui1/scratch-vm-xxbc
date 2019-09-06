@@ -170,6 +170,14 @@ class MicroBit {
     }
 
     /**
+     * @param {Uint8Array} pinArr - the pinArr to display.
+     * @return {Promise} - a Promise that resolves when writing to peripheral.
+     */
+    displayPinState (pinArr) {
+        return this.send(BLECommand.CMD_PIN_CONFIG, pinArr);
+    }
+
+    /**
      * @return {number} - the latest value received for the tilt sensor's tilt about the X axis.
      */
     get tiltX () {
@@ -653,23 +661,6 @@ class Scratch3MicroBitBlocks {
                 },
                 '---',
                 {
-                    opcode: 'whenStart',
-                    text: formatMessage({
-                        id: 'microbit.whenStart',
-                        default: 'when [PINSTATE]',
-                        description: 'when the selected pinState is detected by the micro:bit'
-                    }),
-                    blockType: BlockType.BOOLEAN,
-                    arguments: {
-                        PINSTATE: {
-                            type: ArgumentType.STRING,
-                            menu: 'pinState',
-                            defaultValue: MicroBitPinState.ON
-                        }
-                    }
-                },
-                '---',
-                {
                     opcode: 'whenGesture',
                     text: formatMessage({
                         id: 'microbit.whenGesture',
@@ -733,6 +724,27 @@ class Scratch3MicroBitBlocks {
                         description: 'display nothing on the micro:bit display'
                     }),
                     blockType: BlockType.COMMAND
+                },
+                {
+                    opcode: 'changePinState',
+                    text: formatMessage({
+                        id: 'microbit.whenStart',
+                        default: '设置引脚[PIN]输出[PINSTATE]',
+                        description: 'when the selected pinState is detected by the micro:bit'
+                    }),
+                    blockType: BlockType.COMMAND,
+                    arguments: {
+                        PIN: {
+                            type: ArgumentType.STRING,
+                            menu: 'touchPins',
+                            defaultValue: '0'
+                        },
+                        PINSTATE: {
+                            type: ArgumentType.STRING,
+                            menu: 'pinState',
+                            defaultValue: MicroBitPinState.ON
+                        }
+                    }
                 },
                 {
                     opcode: 'displayXY',
@@ -927,7 +939,6 @@ class Scratch3MicroBitBlocks {
     whenGesture (args) {
         const gesture = cast.toString(args.GESTURE);
         if (gesture === 'moved') {
-            console.log((this._peripheral.gestureState >> 2) & 1);
             return (this._peripheral.gestureState >> 2) & 1;
         } else if (gesture === 'shaken') {
             return this._peripheral.gestureState & 1;
@@ -1002,6 +1013,11 @@ class Scratch3MicroBitBlocks {
                 resolve();
             }, BLESendInterval);
         });
+    }
+    changePinState (args) {
+        console.log(args);
+        console.log(this._peripheral.touchPins);
+        this._peripheral.displayPinState([1, 0, 0]);
     }
     /**
      * Display a predefined symbol on the 5x5 LED matrix.
