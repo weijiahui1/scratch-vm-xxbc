@@ -324,7 +324,6 @@ class MicroBit {
     _onMessage (base64) {
         // parse data
         const data = Base64Util.base64ToUint8Array(base64);
-
         this._sensors.tiltX = data[1] | (data[0] << 8);
         if (this._sensors.tiltX > (1 << 15)) this._sensors.tiltX -= (1 << 16);
         this._sensors.tiltY = data[3] | (data[2] << 8);
@@ -928,6 +927,7 @@ class Scratch3MicroBitBlocks {
     whenGesture (args) {
         const gesture = cast.toString(args.GESTURE);
         if (gesture === 'moved') {
+            console.log((this._peripheral.gestureState >> 2) & 1);
             return (this._peripheral.gestureState >> 2) & 1;
         } else if (gesture === 'shaken') {
             return this._peripheral.gestureState & 1;
@@ -1013,24 +1013,20 @@ class Scratch3MicroBitBlocks {
         let currentArgs = '0000000000000000000000000';
         const currentArgsArrInit = currentArgs.split('');
         for (let j = 0; j < this._peripheral.ledMatrixState.length; j++) {
-            let currState = this._peripheral.ledMatrixState[j];
-            if (currState - 16 >= 0) {
+            const currState = this._peripheral.ledMatrixState[j];
+            if ((currState & 16) === 16) {
                 currentArgsArrInit[4 + (5 * j)] = 1;
-                currState -= 16;
             }
-            if (currState - 8 >= 0) {
+            if ((currState & 8) === 8) {
                 currentArgsArrInit[3 + (5 * j)] = 1;
-                currState -= 8;
             }
-            if (currState - 4 >= 0) {
+            if ((currState & 4) === 4) {
                 currentArgsArrInit[2 + (5 * j)] = 1;
-                currState -= 4;
             }
-            if (currState - 2 >= 0) {
+            if ((currState & 2) === 2) {
                 currentArgsArrInit[1 + (5 * j)] = 1;
-                currState -= 2;
             }
-            if (currState - 1 >= 0) {
+            if ((currState & 1) === 1) {
                 currentArgsArrInit[0 + (5 * j)] = 1;
             }
             currentArgs = currentArgsArrInit.join('');
